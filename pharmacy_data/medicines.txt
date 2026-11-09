@@ -1,0 +1,4 @@
+M101|Paracetamol|Tablet|ABC|20.0|35|2026-11-15
+M102|Vitamin E|Capsule|ABC Pharma|10.0|15|2026-11-08
+M103|citracin|tab|AB pharma|25.0|32|2028-11-18
+M104|vitamin e|capsule|HealthLine|20.0|55|2025-11-05

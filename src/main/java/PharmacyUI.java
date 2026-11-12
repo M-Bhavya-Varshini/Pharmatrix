@@ -1,3 +1,6 @@
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.ProgressIndicator;
+
 import java.time.LocalDateTime;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import java.util.LinkedHashMap;
@@ -31,6 +34,12 @@ public class PharmacyUI {
     private Label availableStockValue;
     private Label nearExpiryValue;
     private Label expiredMedicinesValue;
+    private PieChart medicineStatusChart;
+private ProgressIndicator healthTracker;
+private Label healthPercentageLabel;
+private Label healthyStatusLabel;
+private Label nearAlertValue;
+private Label expiredAlertValue;
 
     private final String NAVY = "#192D4B";
     private final String BACKGROUND = "#F2F5FA";
@@ -51,8 +60,7 @@ public class PharmacyUI {
 private HBox createHeader() {
 
     HBox header = new HBox(15);
-
-    header.setPadding(new Insets(15, 25, 15, 25));
+    header.setPadding(new Insets(18, 28, 18, 28));
     header.setAlignment(Pos.CENTER_LEFT);
 
     header.setStyle(
@@ -61,25 +69,46 @@ private HBox createHeader() {
         "-fx-border-width: 0 0 1 0;"
     );
 
-    Label title = new Label("SMART PHARMACY");
-    title.setFont(Font.font("Arial", 22));
-    title.setTextFill(Color.web(NAVY));
+    VBox titleBox = new VBox(3);
+
+    Label title = new Label("Pharmatrix");
+    title.setFont(Font.font("Arial", 34));
+    title.setStyle(
+        "-fx-text-fill: #123B50;" +
+        "-fx-font-weight: bold;"
+    );
+
+    Label subtitle = new Label(
+        "Pharmacy Management & Inventory System"
+    );
+
+    subtitle.setFont(Font.font("Arial", 15));
+    subtitle.setStyle(
+        "-fx-text-fill: #31566B;" +
+        "-fx-font-style: italic;"
+    );
+
+    titleBox.getChildren().addAll(title, subtitle);
 
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
 
-    Label welcome = new Label("Welcome, Admin");
-    welcome.setFont(Font.font("Arial", 14));
+    Label slogan = new Label(
+        "Better Health. Smarter Management."
+    );
+
+    slogan.setFont(Font.font("Arial", 15));
+    slogan.setStyle(
+        "-fx-text-fill: #176477;" +
+        "-fx-font-style: italic;"
+    );
 
     header.getChildren().addAll(
-        title,
-        spacer,
-        welcome
+        titleBox, spacer, slogan
     );
 
     return header;
 }
-
 
     // Sidebar
     private VBox createSidebar() {
@@ -90,9 +119,14 @@ private HBox createHeader() {
         sidebar.setPrefWidth(220);
         sidebar.setStyle("-fx-background-color: " + NAVY + ";");
 
-        Label logo = new Label("SMART PHARMACY");
+        Label logo = new Label("Pharmatrix");
         logo.setTextFill(Color.WHITE);
         logo.setFont(Font.font("Arial", 19));
+        Label subtitle = new Label(
+    "Pharmacy Management & Expiry Tracker"
+);
+subtitle.setFont(Font.font("Arial", 11));
+subtitle.setStyle("-fx-text-fill: #64748B;");
 
         Button dashboard = createButton("Dashboard");
         Button medicines = createButton("Medicines");
@@ -123,7 +157,6 @@ private HBox createHeader() {
             root.setCenter(createBillingHistoryPage()));
 
         sidebar.getChildren().addAll(
-            logo,
             dashboard,
             medicines,
             search,
@@ -158,69 +191,346 @@ private HBox createHeader() {
     // Dashboard
     private VBox createDashboard() {
 
-    VBox dashboard = new VBox(20);
-    dashboard.setPadding(new Insets(30));
-
-    Label heading = new Label("Dashboard");
-    heading.setFont(Font.font("Arial", 28));
-
-    Label welcome = new Label(
-        "Welcome to Smart Pharmacy Management System"
+    VBox dashboard = new VBox(16);
+    dashboard.setPadding(new Insets(22));
+    dashboard.setStyle(
+        "-fx-background-color: " + BACKGROUND + ";"
     );
 
-    welcome.setFont(Font.font("Arial", 16));
+    Label heading = new Label("Dashboard Overview");
+    heading.setFont(Font.font("Arial", 23));
+    heading.setStyle(
+        "-fx-text-fill: #192D4B;" +
+        "-fx-font-weight: bold;"
+    );
 
-    GridPane cards = new GridPane();
-    cards.setHgap(20);
-    cards.setVgap(20);
+    // Pharmacy banner
+    StackPane banner = new StackPane();
 
-    // Dashboard value labels
+    banner.setMinHeight(145);
+    banner.setPrefHeight(145);
+    banner.setPadding(new Insets(18, 25, 18, 25));
+
+    banner.setStyle(
+        "-fx-background-color: linear-gradient(to right, #D9F2F7, #B9E5ED, #EAF7FA);" +
+        "-fx-background-radius: 16;" +
+        "-fx-border-color: #B8DDE7;" +
+        "-fx-border-radius: 16;"
+    );
+
+    VBox bannerText = new VBox(7);
+
+    Label bannerTitle = new Label(
+        "Manage Medicines.\nCare Better."
+    );
+
+    bannerTitle.setFont(Font.font("Arial", 25));
+    bannerTitle.setStyle(
+        "-fx-text-fill: #123B50;" +
+        "-fx-font-weight: bold;"
+    );
+
+    Label bannerSubtitle = new Label(
+        "Simple, smart and reliable pharmacy inventory management"
+    );
+
+    bannerSubtitle.setFont(Font.font("Arial", 12));
+
+    bannerSubtitle.setStyle(
+        "-fx-text-fill: #31566B;"
+    );
+
+    bannerText.getChildren().addAll(
+        bannerTitle, bannerSubtitle
+    );
+
+    Label medicineArt = new Label("💊     ✚     🩺");
+    medicineArt.setFont(Font.font("Arial", 32));
+
+    HBox bannerContent = new HBox();
+
+    bannerContent.setAlignment(Pos.CENTER_LEFT);
+
+    Region bannerSpacer = new Region();
+    HBox.setHgrow(bannerSpacer, Priority.ALWAYS);
+
+    bannerContent.getChildren().addAll(
+        bannerText, bannerSpacer, medicineArt
+    );
+
+    banner.getChildren().add(bannerContent);
+
+    // Dashboard cards
     totalMedicinesValue = new Label("0");
     availableStockValue = new Label("0");
     nearExpiryValue = new Label("0");
     expiredMedicinesValue = new Label("0");
 
-    cards.add(createCard("Total Medicines", totalMedicinesValue), 0, 0);
-    cards.add(createCard("Available Stock", availableStockValue), 1, 0);
-    cards.add(createCard("Near Expiry", nearExpiryValue), 0, 1);
-    cards.add(createCard("Expired Medicines", expiredMedicinesValue), 1, 1);
+    GridPane cards = new GridPane();
+
+    cards.setHgap(12);
+    cards.setVgap(12);
+
+    for (int i = 0; i < 4; i++) {
+        ColumnConstraints column = new ColumnConstraints();
+        column.setPercentWidth(25);
+        column.setHgrow(Priority.ALWAYS);
+        cards.getColumnConstraints().add(column);
+    }
+
+    cards.add(
+        createCard("Total Medicines", totalMedicinesValue), 0, 0
+    );
+
+    cards.add(
+        createCard("Available Stock", availableStockValue), 1, 0
+    );
+
+    cards.add(
+        createCard("Near Expiry", nearExpiryValue), 2, 0
+    );
+
+    cards.add(
+        createCard("Expired Medicines", expiredMedicinesValue), 3, 0
+    );
+
+    // Pie chart
+    medicineStatusChart = new PieChart();
+
+    medicineStatusChart.setTitle("Medicine Status Overview");
+    medicineStatusChart.setLegendVisible(true);
+    medicineStatusChart.setLabelsVisible(true);
+    medicineStatusChart.setPrefSize(340, 230);
+
+    VBox chartPanel = createDashboardPanel();
+
+    chartPanel.getChildren().add(medicineStatusChart);
+
+    // Inventory health tracker
+    healthTracker = new ProgressIndicator(0);
+
+    healthTracker.setPrefSize(125, 125);
+    healthTracker.setStyle("-fx-accent: #079B78;");
+
+    healthPercentageLabel = new Label("0%");
+
+    healthPercentageLabel.setFont(Font.font("Arial", 27));
+    healthPercentageLabel.setStyle(
+        "-fx-text-fill: #075E50;" +
+        "-fx-font-weight: bold;"
+    );
+
+    healthyStatusLabel = new Label("Healthy");
+
+    healthyStatusLabel.setFont(Font.font("Arial", 15));
+
+    StackPane trackerCircle = new StackPane(
+        healthTracker,
+        new VBox(
+            0,
+            healthPercentageLabel,
+            healthyStatusLabel
+        )
+    );
+
+    trackerCircle.setAlignment(Pos.CENTER);
+
+    VBox trackerPanel = createDashboardPanel();
+
+    Label trackerTitle = new Label(
+        "Inventory Health Tracker"
+    );
+
+    trackerTitle.setFont(Font.font("Arial", 16));
+    trackerTitle.setStyle(
+        "-fx-text-fill: #192D4B;" +
+        "-fx-font-weight: bold;"
+    );
+
+    trackerPanel.setAlignment(Pos.TOP_CENTER);
+
+    trackerPanel.getChildren().addAll(
+        trackerTitle,
+        trackerCircle
+    );
+
+    // Expiry alerts
+    VBox alertsPanel = createDashboardPanel();
+
+    Label alertsTitle = new Label("Expiry Alerts");
+
+    alertsTitle.setFont(Font.font("Arial", 16));
+    alertsTitle.setStyle(
+        "-fx-text-fill: #192D4B;" +
+        "-fx-font-weight: bold;"
+    );
+
+    nearAlertValue = new Label("0");
+    nearAlertValue.setFont(Font.font("Arial", 21));
+    nearAlertValue.setStyle(
+        "-fx-text-fill: #E69A36;" +
+        "-fx-font-weight: bold;"
+    );
+
+    expiredAlertValue = new Label("0");
+    expiredAlertValue.setFont(Font.font("Arial", 21));
+    expiredAlertValue.setStyle(
+        "-fx-text-fill: #D9534F;" +
+        "-fx-font-weight: bold;"
+    );
+
+    HBox nearAlert = new HBox(
+        8,
+        new Label("🕒 Near Expiry"),
+        nearAlertValue
+    );
+
+    HBox expiredAlert = new HBox(
+        8,
+        new Label("⚠ Expired"),
+        expiredAlertValue
+    );
+
+    Button expiryButton = new Button(
+        "View Expiry Details"
+    );
+
+    expiryButton.setMaxWidth(Double.MAX_VALUE);
+
+    expiryButton.setStyle(
+        "-fx-background-color: #087E8B;" +
+        "-fx-text-fill: white;" +
+        "-fx-background-radius: 7;" +
+        "-fx-padding: 9 14;"
+    );
+
+    expiryButton.setOnAction(e ->
+        root.setCenter(createExpiryPage())
+    );
+
+    alertsPanel.getChildren().addAll(
+        alertsTitle,
+        nearAlert,
+        expiredAlert,
+        expiryButton
+    );
+
+    // Arrange three dashboard panels
+    GridPane lowerPanels = new GridPane();
+
+    lowerPanels.setHgap(12);
+    lowerPanels.setVgap(12);
+
+    ColumnConstraints left = new ColumnConstraints();
+    left.setPercentWidth(42);
+    left.setHgrow(Priority.ALWAYS);
+
+    ColumnConstraints middle = new ColumnConstraints();
+    middle.setPercentWidth(30);
+    middle.setHgrow(Priority.ALWAYS);
+
+    ColumnConstraints right = new ColumnConstraints();
+    right.setPercentWidth(28);
+    right.setHgrow(Priority.ALWAYS);
+
+    lowerPanels.getColumnConstraints().addAll(
+        left, middle, right
+    );
+
+    lowerPanels.add(chartPanel, 0, 0);
+    lowerPanels.add(trackerPanel, 1, 0);
+    lowerPanels.add(alertsPanel, 2, 0);
 
     dashboard.getChildren().addAll(
         heading,
-        welcome,
-        cards
+        banner,
+        cards,
+        lowerPanels
     );
 
     updateDashboard();
 
-    return dashboard;
-}
-    // Dashboard cards
-    private VBox createCard(String title, Label number) {
+    ScrollPane scrollPane = new ScrollPane(dashboard);
+    scrollPane.setFitToWidth(true);
 
-    VBox card = new VBox(15);
-
-    card.setAlignment(Pos.CENTER);
-    card.setPadding(new Insets(25));
-    card.setPrefSize(350, 170);
-
-    card.setStyle(
-        "-fx-background-color: white;" +
-        "-fx-background-radius: 10;" +
-        "-fx-border-color: #D5DCE5;" +
-        "-fx-border-radius: 10;"
+    scrollPane.setStyle(
+        "-fx-background: " + BACKGROUND + ";" +
+        "-fx-background-color: " + BACKGROUND + ";"
     );
 
-    Label name = new Label(title);
-    name.setFont(Font.font("Arial", 17));
+    VBox wrapper = new VBox(scrollPane);
+
+    VBox.setVgrow(scrollPane, Priority.ALWAYS);
+
+    return wrapper;
+}
+private VBox createDashboardPanel() {
+
+    VBox panel = new VBox(13);
+
+    panel.setPadding(new Insets(15));
+    panel.setMinHeight(220);
+
+    panel.setStyle(
+        "-fx-background-color: white;" +
+        "-fx-background-radius: 13;" +
+        "-fx-border-color: #D9E3EF;" +
+        "-fx-border-radius: 13;" +
+        "-fx-effect: dropshadow(gaussian, rgba(25,45,75,0.08), 8, 0, 0, 2);"
+    );
+
+    return panel;
+}
+    // Dashboard cards
+    
+private VBox createCard(String title, Label number) {
+
+    VBox card = new VBox(12);
+    card.setPadding(new Insets(20));
+    card.setMaxWidth(Double.MAX_VALUE);
+card.setPrefHeight(112);
+
+    String accentColor = "#168C91";
+
+    if (title.equals("Total Medicines")) {
+        accentColor = "#247BA0";
+    } else if (title.equals("Available Stock")) {
+        accentColor = "#26966F";
+    } else if (title.equals("Near Expiry")) {
+        accentColor = "#E69A36";
+    } else if (title.equals("Expired Medicines")) {
+        accentColor = "#D9534F";
+    }
+
+    Label heading = new Label(title);
+    heading.setFont(Font.font("Arial", 15));
+    heading.setStyle("-fx-text-fill: #64748B;");
 
     number.setFont(Font.font("Arial", 30));
-    number.setTextFill(Color.web(NAVY));
+    number.setStyle("-fx-text-fill: " + accentColor
+            + "; -fx-font-weight: bold;");
 
-    card.getChildren().addAll(name, number);
+    Region accent = new Region();
+    accent.setPrefHeight(5);
+    accent.setMaxWidth(Double.MAX_VALUE);
+    accent.setStyle("-fx-background-color: " + accentColor
+            + "; -fx-background-radius: 5;");
+
+    card.getChildren().addAll(accent, heading, number);
+
+    card.setStyle(
+        "-fx-background-color: white;"
+        + "-fx-background-radius: 12;"
+        + "-fx-border-radius: 12;"
+        + "-fx-border-color: #E2E8F0;"
+        + "-fx-border-width: 1;"
+        + "-fx-effect: dropshadow(gaussian, "
+        + "rgba(25,45,75,0.10), 10, 0, 0, 3);"
+    );
 
     return card;
 }
+
     // Other pages
     private VBox createPage(String title) {
 
@@ -416,6 +726,7 @@ private void updateDashboard() {
     int stock = 0;
     int nearExpiry = 0;
     int expired = 0;
+    int healthy = 0;
 
     LocalDate today = LocalDate.now();
 
@@ -426,18 +737,82 @@ private void updateDashboard() {
         LocalDate expiry = medicine.getExpiryDate();
 
         if (expiry.isBefore(today)) {
+
             expired++;
-        }
-        else if (!expiry.isAfter(today.plusDays(30))) {
+
+        } else if (!expiry.isAfter(today.plusDays(30))) {
+
             nearExpiry++;
+
+        } else if (medicine.getQuantity() > 0) {
+
+            healthy++;
         }
     }
 
+    // Update dashboard cards
     if (totalMedicinesValue != null) {
-        totalMedicinesValue.setText(String.valueOf(total));
-        availableStockValue.setText(String.valueOf(stock));
-        nearExpiryValue.setText(String.valueOf(nearExpiry));
-        expiredMedicinesValue.setText(String.valueOf(expired));
+
+        totalMedicinesValue.setText(
+            String.valueOf(total)
+        );
+
+        availableStockValue.setText(
+            String.valueOf(stock)
+        );
+
+        nearExpiryValue.setText(
+            String.valueOf(nearExpiry)
+        );
+
+        expiredMedicinesValue.setText(
+            String.valueOf(expired)
+        );
+    }
+
+    // Update expiry alerts
+    if (nearAlertValue != null) {
+
+        nearAlertValue.setText(
+            String.valueOf(nearExpiry)
+        );
+
+        expiredAlertValue.setText(
+            String.valueOf(expired)
+        );
+    }
+
+    // Update health tracker
+    double percentage = total == 0
+        ? 0
+        : (double) healthy / total;
+
+    if (healthTracker != null) {
+
+        healthTracker.setProgress(percentage);
+
+        healthPercentageLabel.setText(
+            Math.round(percentage * 100) + "%"
+        );
+    }
+
+    // Update pie chart
+    if (medicineStatusChart != null) {
+
+        medicineStatusChart.getData().setAll(
+
+            new PieChart.Data(
+                "Healthy (" + healthy + ")", healthy
+            ),
+
+            new PieChart.Data(
+                "Near Expiry (" + nearExpiry + ")", nearExpiry
+            ),
+
+            new PieChart.Data(
+                "Expired (" + expired + ")", expired
+            )
+        );
     }
 }
 private VBox createSearchPage() {
